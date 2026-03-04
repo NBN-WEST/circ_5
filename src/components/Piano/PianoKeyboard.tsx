@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { getPianoEngine } from '../../audio/piano';
 import { WhiteKey } from './WhiteKey';
 import { BlackKey } from './BlackKey';
@@ -49,10 +49,28 @@ export const PianoKeyboard: React.FC = () => {
     initPiano();
   }, [piano, pianoInitialized, pianoLoading]);
 
+  const isMouseDown = useRef(false);
+
+  // Rilascia tutti i tasti se il mouse viene rilasciato fuori dalla tastiera
+  useEffect(() => {
+    const handleGlobalMouseUp = () => {
+      if (isMouseDown.current) {
+        isMouseDown.current = false;
+        activeKeys.forEach((fullNote) => {
+          piano.releaseKey(fullNote);
+        });
+        setActiveKeys(new Set());
+      }
+    };
+    window.addEventListener('mouseup', handleGlobalMouseUp);
+    return () => window.removeEventListener('mouseup', handleGlobalMouseUp);
+  }, [piano, activeKeys]);
+
   const handleKeyDown = useCallback(
     (note: string, octave: number) => {
       if (!pianoInitialized) return;
 
+      isMouseDown.current = true;
       const fullNote = `${note}${octave}`;
       piano.playKey(fullNote, 0.8);
       setActiveKeys((prev) => new Set(prev).add(fullNote));
@@ -64,6 +82,7 @@ export const PianoKeyboard: React.FC = () => {
     (note: string, octave: number) => {
       if (!pianoInitialized) return;
 
+      isMouseDown.current = false;
       const fullNote = `${note}${octave}`;
       piano.releaseKey(fullNote);
       setActiveKeys((prev) => {

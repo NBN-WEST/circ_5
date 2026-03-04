@@ -9,6 +9,8 @@ export class PianoSampler {
   private initialized: boolean = false;
   private loading: boolean = false;
 
+  private activeNoteTimeouts: Map<string, ReturnType<typeof setTimeout>> = new Map();
+
   constructor() {
     this.piano = new Tone.Sampler({
       urls: {
@@ -17,7 +19,7 @@ export class PianoSampler {
         "F#4": "Fs4.mp3",
         A4: "A4.mp3",
       },
-      release: 1,
+      release: 0.5,
       baseUrl: "https://tonejs.github.io/audio/salamander/",
     }).toDestination();
   }
@@ -61,10 +63,22 @@ export class PianoSampler {
     }
 
     try {
+      // Cancella eventuale timeout precedente per questa nota
+      const existingTimeout = this.activeNoteTimeouts.get(note);
+      if (existingTimeout) {
+        clearTimeout(existingTimeout);
+      }
+
       if (duration) {
         this.piano.triggerAttackRelease(note, duration, undefined, velocity);
       } else {
         this.piano.triggerAttack(note, undefined, velocity);
+        // Timeout di sicurezza: rilascia la nota dopo 3 secondi se non viene rilasciata manualmente
+        const timeout = setTimeout(() => {
+          this.releaseKey(note);
+          this.activeNoteTimeouts.delete(note);
+        }, 3000);
+        this.activeNoteTimeouts.set(note, timeout);
       }
     } catch (error) {
       console.error('Errore riproduzione tasto:', error);
@@ -74,6 +88,13 @@ export class PianoSampler {
   releaseKey(note: string): void {
     if (!this.initialized) {
       return;
+    }
+
+    // Cancella il timeout di sicurezza
+    const timeout = this.activeNoteTimeouts.get(note);
+    if (timeout) {
+      clearTimeout(timeout);
+      this.activeNoteTimeouts.delete(note);
     }
 
     try {

@@ -15,17 +15,18 @@ export class AudioSynthesizer {
       oscillator: { type: 'sine' },
       envelope: {
         attack: 0.005,
-        decay: 0.1,
-        sustain: 0.3,
-        release: 1
+        decay: 0.2,
+        sustain: 0.2,
+        release: 0.3
       }
     });
 
     this.reverb = new Tone.Reverb({
-      decay: 1.5,
-      wet: 0.3
+      decay: 1,
+      wet: 0.2
     });
 
+    this.synth.maxPolyphony = 16;
     this.synth.connect(this.reverb);
     this.reverb.toDestination();
   }
@@ -55,13 +56,14 @@ export class AudioSynthesizer {
     }
 
     try {
+      this.synth.releaseAll();
       this.synth.triggerAttackRelease(note, duration, undefined, velocity);
     } catch (error) {
       console.error('Errore riproduzione nota:', error);
     }
   }
 
-  playChord(notes: string[], duration: string | number = '2n', velocity: number = 0.8): void {
+  playChord(notes: string[], duration: string | number = '1n', velocity: number = 0.7): void {
     if (!this.initialized) {
       console.error('Audio non inizializzato');
       return;
@@ -72,6 +74,7 @@ export class AudioSynthesizer {
     }
 
     try {
+      this.synth.releaseAll();
       this.synth.triggerAttackRelease(notes, duration, undefined, velocity);
     } catch (error) {
       console.error('Errore riproduzione accordo:', error);
