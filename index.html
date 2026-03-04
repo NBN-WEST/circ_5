@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Content Security Policy -->
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self';
+                 script-src 'self' 'unsafe-inline';
+                 style-src 'self' 'unsafe-inline';
+                 img-src 'self' data: https:;
+                 connect-src 'self' https://api.anthropic.com https://tonejs.github.io;
+                 font-src 'self';
+                 object-src 'none';
+                 media-src 'self' https://tonejs.github.io;
+                 frame-src 'none';">
+
+  <!-- Permissions Policy -->
+  <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=()">
+
+  <link rel="icon" type="image/png" href="/icon.png" />
+  <title>Circolo delle Quinte</title>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+</html>
